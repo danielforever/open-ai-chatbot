@@ -1,18 +1,7 @@
 import NextAuth from "next-auth";
 import AzureADProvider from "next-auth/providers/azure-ad";
 
-
-declare module "next-auth" {
-  interface Session {
-    user?: {
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      id?: string | null;
-    };
-  }
-}
-const handler = NextAuth({
+export default NextAuth({
   providers: [
     AzureADProvider({
       clientId: process.env.AZURE_AD_CLIENT_ID!,
@@ -22,19 +11,12 @@ const handler = NextAuth({
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async session({ session, token }) {
-      console.log("SESSION CALLBACK", session, token);
-      session.user = session.user || {};
-      session.user.id = token.sub;
-      return session;
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
     },
-    async jwt({ token }) {
-      return token;
-    },
-  },
-  pages: {
-    signIn: "/auth/signin", // Optional custom sign-in page
   },
 });
-
-export default handler;
