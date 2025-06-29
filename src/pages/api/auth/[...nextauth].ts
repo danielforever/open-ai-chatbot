@@ -18,5 +18,11 @@ export default NextAuth({
       else if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
+    async session({ session }) {
+      if (!session.user.image) {
+        session.user.image = `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name || "User")}&background=random`;
+      }
+      return session;
+    },
   },
 });

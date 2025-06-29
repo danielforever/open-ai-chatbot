@@ -19,19 +19,19 @@ const Login = () => {
 
           {/* Sign in with Google button */}
           <button
-            onClick={() => signIn("google")}
+            onClick={() => signIn("Microsoft")}
             className="flex items-center w-full justify-center tracking-widest gap-2 px-6 py-2 text-sm font-semibold text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm outline-none focus:outline-none hover:bg-gray-100 active:bg-gray-200"
           >
-            {/* Google logo */}
+            {/* Microsoft logo */}
             <Image
-              src="/google.png"
-              alt="Google Logo"
+              src="/Microsoft.png"
+              alt="Microsoft Logo"
               width={30}
               height={30}
               className="object-contain"
             />
             {/* Button text */}
-            <span className="uppercase">Sign in with Google</span>
+            <span className="uppercase">Sign in with Microsoft</span>
           </button>
         </div>
       </div>
