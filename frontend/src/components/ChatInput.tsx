@@ -14,6 +14,21 @@ interface Props {
   chatId: string;
 }
 
+// const jwt = require("jsonwebtoken");
+
+// function verifyJWT(req, res, next) {
+//   const authHeader = req.headers.authorization;
+//   if (!authHeader) return res.status(401).json({ error: "No token provided" });
+
+//   const token = authHeader.split(" ")[1];
+//   jwt.verify(token, process.env.NEXTAUTH_SECRET, (err, decoded) => {
+//     if (err) return res.status(403).json({ error: "Invalid token" });
+//     req.user = decoded;
+//     next();
+//   });
+// }
+
+
 const ChatInput: React.FC<Props> = ({ chatId }) => {
   const [prompt, setPrompt] = useState("");
   const { data: session } = useSession();
@@ -37,7 +52,8 @@ const ChatInput: React.FC<Props> = ({ chatId }) => {
       user: {
         _id: session.user?.email!,
         name: session.user?.name!,
-        avatar: session.user?.image ?? `https://ui-avatars.com/api/?name=${session.user?.name}`,
+        avatar: session.user?.image ??
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user?.name || "User")}&background=random&format=png`
       },
     };
 
@@ -49,15 +65,30 @@ const ChatInput: React.FC<Props> = ({ chatId }) => {
 
       const notification = toast.loading("OpenAI is thinking...");
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+      // const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+      const API_BASE = 'http://localhost:5000';
 
       const response = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: input, chatId, model, session }),
+        body: JSON.stringify({ prompt: input, chatId, model, session: session.user }),
       });
 
       if (response.ok) {
+        const data = await response.json();
+        // Add AI response to Firestore
+        await addDoc(
+          collection(db, "user", session.user?.email!, "chats", chatId, "messages"),
+          {
+            text: data.result,
+            createdAt: serverTimestamp(),
+            user: {
+              _id: "chatgpt",
+              name: "ChatGPT",
+              avatar: "https://ui-avatars.com/api/?name=ChatGPT&background=random&format=png",
+            },
+          }
+        );
         toast.success("OpenAI has responded!", { id: notification });
       } else {
         toast.error("Failed to get a response from OpenAI.");

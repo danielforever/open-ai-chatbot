@@ -221,4 +221,15 @@ FIREBASE_SERVICE_ACCOUNT_KEY=
 ```
 
 
+CosmosDB Data Model
+A common, scalable approach is to use a single container (collection) with documents shaped like this:
 
+{
+  "id": "message-uuid",
+  "userId": "user-uuid-or-email",
+  "projectId": "project-uuid",
+  "chatId": "chat-uuid",
+  "role": "user" | "assistant",
+  "content": "Message text here",
+  "createdAt": "2024-06-30T12:34:56.789Z"
+}

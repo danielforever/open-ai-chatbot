@@ -9,10 +9,14 @@ import { useCollection } from "react-firebase-hooks/firestore";
 import ChatRow from "./ChatRow";
 import ModelSelection from "./ModelSelection";
 import NewChat from "./NewChat";
+import NewProjectButton from "./NewProjectButton";
+import { useRouter } from "next/navigation"; // For Next.js 13+ app router
 
 export default function SideBar() {
   // Get the user session using next-auth
   const { data: session } = useSession();
+
+  const router = useRouter();
 
   // Get the chats collection for the current user
   const [chats, loading, error] = useCollection(
@@ -33,6 +37,15 @@ export default function SideBar() {
           <h2 className="text-white animate-pulse text-center p-2 my-3 text-sm  font-semibold bg-cyan-900 rounded-lg px-5 py-3flex items-center justify-center space-x-2">
             Only Text format are supported.
           </h2>
+
+          {/* New Project Button */}
+          
+          <NewProjectButton
+            onCreate={({ projectId, chatId }) => {
+              // Navigate to the new project/chat page
+              router.push(`/project/${projectId}/chat/${chatId}`);
+            }}
+          />
 
           {/* New Chat */}
           <NewChat />
