@@ -49,7 +49,9 @@ const ChatInput: React.FC<Props> = ({ chatId }) => {
 
       const notification = toast.loading("OpenAI is thinking...");
 
-      const response = await fetch(`${window.location.origin}/api/askQuestion`, {
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
+      const response = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: input, chatId, model, session }),
