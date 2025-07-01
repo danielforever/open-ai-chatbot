@@ -5,8 +5,8 @@ import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import toast from "react-hot-toast";
 import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "firebaseStore";
+// import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+// import { db } from "@/firebaseStore";
 import ModelSelection from "./ModelSelection";
 import { Messages } from "typings";
 
@@ -58,10 +58,11 @@ const ChatInput: React.FC<Props> = ({ chatId }) => {
     };
 
     try {
-      await addDoc(
-        collection(db, "user", session.user?.email!, "chats", chatId, "messages"),
-        messages
-      );
+      await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, chatId, projectId, session: session.user }),
+      });
 
       const notification = toast.loading("OpenAI is thinking...");
 
@@ -77,18 +78,11 @@ const ChatInput: React.FC<Props> = ({ chatId }) => {
       if (response.ok) {
         const data = await response.json();
         // Add AI response to Firestore
-        await addDoc(
-          collection(db, "user", session.user?.email!, "chats", chatId, "messages"),
-          {
-            text: data.result,
-            createdAt: serverTimestamp(),
-            user: {
-              _id: "chatgpt",
-              name: "ChatGPT",
-              avatar: "https://ui-avatars.com/api/?name=ChatGPT&background=random&format=png",
-            },
-          }
-        );
+        await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt, chatId, projectId, session: session.user }),
+        });
         toast.success("OpenAI has responded!", { id: notification });
       } else {
         toast.error("Failed to get a response from OpenAI.");

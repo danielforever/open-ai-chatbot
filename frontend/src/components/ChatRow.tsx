@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useRouter, usePathname } from "next/navigation";
 import { ChatBubbleLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { deleteDoc, doc, collection } from "firebase/firestore";
-import { db } from "firebaseStore";
+import { db } from "@/firebaseStore";
 import { useSession } from "next-auth/react";
 
 interface Props {

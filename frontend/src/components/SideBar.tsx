@@ -1,11 +1,12 @@
 "use client";
 
 import { ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
-import { collection, orderBy, query } from "firebase/firestore";
-import { db } from "firebaseStore";
+// import { collection, orderBy, query } from "firebase/firestore";
+// import { db } from "@/firebaseStore";
 import { Session } from "next-auth";
 import { useSession, signOut } from "next-auth/react";
-import { useCollection } from "react-firebase-hooks/firestore";
+import useSWR from "swr";
+// import { useCollection } from "react-firebase-hooks/firestore";
 import ChatRow from "./ChatRow";
 import ModelSelection from "./ModelSelection";
 import NewChat from "./NewChat";
@@ -17,11 +18,12 @@ export default function SideBar() {
   const { data: session } = useSession();
 
   const router = useRouter();
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+  const fetcher = (url: string) => fetch(`${API_BASE}${url}`).then(res => res.json());
 
-  // Get the chats collection for the current user
-  const [chats, loading, error] = useCollection(
-    session &&
-      query(collection(db, "user", session?.user?.email!, "chats"), orderBy("createdAt", "asc"))
+  const { data: chats, isLoading, error } = useSWR(
+    session ? `/api/chats?userId=${session.user.email}` : null,
+    fetcher
   );
 
   // Handle errors loading chats
@@ -57,13 +59,15 @@ export default function SideBar() {
 
           {/* Map through the ChatRows */}
           <div className="flex flex-col space-y-2 my-2 max-h-[calc(100vh-20rem)] overflow-y-auto">
-            {loading && (
+            {isLoading && (
               <div className="animate-pulse text-center text-white">
                 <p>Loading Chats...</p>
               </div>
             )}
-            {chats?.size === 0 && <div className="text-white text-center">No Chats Available</div>}
-            {chats?.docs.map((chat) => (
+            {(!chats || chats.length === 0) && !isLoading && (
+              <div className="text-white text-center">No Chats Available</div>
+            )}
+            {chats?.map((chat: any) => (
               <ChatRow key={chat.id} id={chat.id} />
             ))}
           </div>

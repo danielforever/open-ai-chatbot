@@ -16,6 +16,40 @@ const openai = new OpenAI({
 
 let chatStore = {}; // Temporary in-memory store (use DB later)
 
+// GET route to fetch all chats for a user
+app.get("/api/chats", async (req, res) => {
+  const userId = req.query.userId;
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
+  // Query distinct chatIds for this user
+  const querySpec = {
+    query: "SELECT DISTINCT c.chatId FROM c WHERE c.userId = @userId",
+    parameters: [{ name: "@userId", value: userId }],
+  };
+  const { resources } = await container.items.query(querySpec).fetchAll();
+
+  let chats = resources.map(r => ({ id: r.chatId }));
+
+  // If no chats, create an empty chat for this user
+  if (chats.length === 0) {
+    const chatId = require("crypto").randomUUID();
+    // Save a placeholder message or just the chat meta
+    await container.items.create({
+      id: require("crypto").randomUUID(),
+      userId,
+      chatId,
+      role: "system",
+      content: "",
+      createdAt: new Date().toISOString(),
+    });
+    chats = [{ id: chatId }];
+  }
+
+  res.json(chats);
+});
+
 // POST route to handle chat messages
 app.post("/api/chat", async (req, res) => {
   const { prompt, chatId, projectId, session } = req.body;

@@ -3,7 +3,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import admin from "firebase-admin";
 import { Messages } from "typings";
-import { adminDB } from "firebaseStoreAdmin";
+import { adminDB } from "@/firebaseStoreAdmin";
 import query from "@/lib/queryApi";
 // import { collection } from "@firebase/firestore";
 // import { addDoc } from "firebase/firestore";

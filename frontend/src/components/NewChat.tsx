@@ -1,7 +1,7 @@
 "use client";
 
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { db } from "firebaseStore";
+import { db } from "@/firebaseStore";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
