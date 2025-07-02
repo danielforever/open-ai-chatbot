@@ -18,7 +18,8 @@ let chatStore = {}; // Temporary in-memory store (use DB later)
 
 // GET route to fetch all chats for a user
 app.get("/api/chats", async (req, res) => {
-  const userId = req.query.userId;
+  const { userId, projectId } = req.body;
+  // const userId = req.query.userId;
   if (!userId) {
     return res.status(400).json({ error: "Missing userId" });
   }
@@ -40,10 +41,12 @@ app.get("/api/chats", async (req, res) => {
       id: require("crypto").randomUUID(),
       userId,
       chatId,
+      projectId: projectId || null,
       role: "system",
       content: "",
       createdAt: new Date().toISOString(),
     });
+    await container.items.create(doc);
     chats = [{ id: chatId }];
   }
 
@@ -51,38 +54,38 @@ app.get("/api/chats", async (req, res) => {
 });
 
 // POST route to handle chat messages
-app.post("/api/chat", async (req, res) => {
-  const { prompt, chatId, projectId, session } = req.body;
-  const userId = session?.email;
+// app.post("/api/chat", async (req, res) => {
+//   const { prompt, chatId, projectId, session } = req.body;
+//   const userId = session?.email;
 
-  if (!prompt || !session?.email) {
-    return res.status(400).json({ error: "Missing prompt or session" });
-  }
+//   if (!prompt || !session?.email) {
+//     return res.status(400).json({ error: "Missing prompt or session" });
+//   }
 
-  // 1. Get chat history
-  const history = await getChatHistory(chatId, 10); // last 10 messages
+//   // 1. Get chat history
+//   const history = await getChatHistory(chatId, 10); // last 10 messages
 
-  console.log(`User ${session.email} asked: ${prompt}`);
+//   console.log(`User ${session.email} asked: ${prompt}`);
 
-  // Optionally: Store session.user.email to tag history
-  // 2. Build messages array for OpenAI
-  const messages = history.map(m => ({ role: m.role, content: m.content }));
-  messages.push({ role: "user", content: prompt });
+//   // Optionally: Store session.user.email to tag history
+//   // 2. Build messages array for OpenAI
+//   const messages = history.map(m => ({ role: m.role, content: m.content }));
+//   messages.push({ role: "user", content: prompt });
 
-  // 3. Call OpenAI
-  const chatCompletion = await openai.chat.completions.create({
-    model: "gpt-3.5-turbo",
-    messages,
-  });
+//   // 3. Call OpenAI
+//   const chatCompletion = await openai.chat.completions.create({
+//     model: "gpt-3.5-turbo",
+//     messages,
+//   });
 
   
-  const result = chatCompletion.choices[0].message.content;
-  console.log(`${result}`);
-  // 4. Save user and assistant messages
-  await saveMessage({ userId, projectId, chatId, role: "user", content: prompt });
-  await saveMessage({ userId, projectId, chatId, role: "assistant", content: result });
-  res.json({ result });
-});
+//   const result = chatCompletion.choices[0].message.content;
+//   console.log(`${result}`);
+//   // 4. Save user and assistant messages
+//   await saveMessage({ userId, projectId, chatId, role: "user", content: prompt });
+//   await saveMessage({ userId, projectId, chatId, role: "assistant", content: result });
+//   res.json({ result });
+// });
 
 // Save a message
 async function saveMessage({ userId, projectId, chatId, role, content }) {

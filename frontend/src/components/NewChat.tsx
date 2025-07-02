@@ -6,24 +6,22 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE;
+
+
 const NewChat = () => {
   const router = useRouter();
   const { data: session } = useSession();
 
   const createNewChat = async () => {
-    // Make sure the user is logged in
-    if (!session || !session.user || !session.user.email) {
-      return;
-    }
-
-    // Add a new chat document to the user's chats collection
-    const doc = await addDoc(collection(db, "user", session.user.email, "chats"), {
-      userId: session.user.email,
-      createdAt: serverTimestamp(),
+    if (!session?.user?.email) return;
+    const res = await fetch(`${API_BASE}/api/chats`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: session.user.email }),
     });
-
-    // Navigate to the chat page
-    router.push(`/chat/${doc.id}`);
+    const data = await res.json();
+    router.push(`/chat/${data.chatId}`);
   };
 
   return (
